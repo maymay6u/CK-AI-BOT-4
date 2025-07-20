@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-app = Flask(__name__)
+app = Flask(__name__)  # ✅ correct
 CORS(app)
 
 @app.route("/", methods=["GET"])
@@ -23,5 +23,5 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == "__main__":  # ✅ correct
+    app.run(host="0.0.0.0", port=10000)  # ✅ required for Render
