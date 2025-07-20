@@ -1,29 +1,28 @@
 from flask import Flask, request, jsonify
+import math
+import os
 
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return "✅ CK Lottery AI Predictor is Running!"
+def calculate_next_number(a, b, c):
+    total = a + b + c
+    result = (total * total) % 10
+    return result
 
-@app.route('/predict', methods=['POST'])
+@app.route("/predict", methods=["POST"])
 def predict():
-    try:
-        data = request.get_json()
-        a = int(data.get('a', 0))
-        b = int(data.get('b', 0))
-        c = int(data.get('c', 0))
-        
-        # CK Lottery logic from Decompiled.apk: (a + b + c)^2 % 10
-        result = ((a + b + c) ** 2) % 10
+    data = request.get_json()
+    numbers = data.get("numbers", [])
+    
+    if len(numbers) < 3:
+        return jsonify({"error": "At least 3 numbers are required"}), 400
 
-        return jsonify({
-            'predicted_number': result,
-            'confidence': "99%",
-            'formula_used': "((a + b + c)^2) % 10"
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
+    a, b, c = numbers[-3], numbers[-2], numbers[-1]
+    prediction = calculate_next_number(a, b, c)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    return jsonify({"prediction": prediction})
+
+# ✅ Public Render deployment-compatible server runner
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))  # Render will inject PORT
+    app.run(host="0.0.0.0", port=port)
