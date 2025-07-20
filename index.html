@@ -1,0 +1,201 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CK Lottery Smart Predictor</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      padding: 30px;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    input, button {
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+    input {
+      width: 220px;
+      margin-bottom: 10px;
+      border: 2px solid orange;
+      text-align: center;
+    }
+    button {
+      cursor: pointer;
+      background-color: #12b312;
+      color: white;
+      margin: 5px;
+    }
+    .predict-btn {
+      background-color: #12b312;
+    }
+    .save-btn {
+      background-color: #e65100;
+    }
+    .result {
+      font-size: 20px;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    table {
+      margin-top: 20px;
+      width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #444;
+    }
+    .led {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      animation: ledBlink 2s infinite;
+      box-shadow: 0 0 10px currentColor;
+    }
+    @keyframes ledBlink {
+      0%   { background-color: red;   color: red; }
+      33%  { background-color: blue;  color: blue; }
+      66%  { background-color: gold;  color: gold; }
+      100% { background-color: red;   color: red; }
+    }
+    .footer-led {
+      margin-top: 50px;
+      color: white;
+      font-family: monospace;
+      font-size: 14px;
+      background: #111;
+      padding: 10px 20px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 0 15px #222;
+    }
+    #saveSection {
+      display: none;
+      margin-top: 20px;
+    }
+    #telegramContact {
+      display: none;
+      margin-top: 10px;
+      color: orange;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>CK Lottery Smart Predictor</h1>
+  <p>ဥပမာ: 7,8,5 လို့ input ထည့်ပါ။</p>
+
+  <input type="text" id="inputNumbers" placeholder="e.g. 7,8,5" />
+  <br/>
+  <button onclick="predict()" class="predict-btn">ခန့်မှန်းပါ</button>
+
+  <p class="result" id="predictionResult"></p>
+
+  <hr style="margin: 30px 0; border-color: #444;">
+
+  <p>🔐 Admin Access:</p>
+  <input type="password" id="adminPassword" placeholder="Enter admin password"/>
+  <br/>
+  <button onclick="checkAdmin()">🔓 Unlock Admin</button>
+  <p id="telegramContact">👉 Contact @ano5s4 for password</p>
+
+  <div id="saveSection">
+    <p>📌 Prediction မှန်မှသာ Admin Only:</p>
+    <input type="text" id="actualResult" placeholder="Actual result"/>
+    <br/>
+    <button onclick="saveResult()" class="save-btn">💾 Save Result</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Input Pattern</th>
+        <th>Saved Result</th>
+      </tr>
+    </thead>
+    <tbody id="resultTableBody"></tbody>
+  </table>
+
+  <div class="footer-led">
+    <span class="led"></span> Powered by Htetmyat
+  </div>
+
+  <script>
+    let savedResults = [];
+    let tryCount = 0;
+    const correctPassword = "htetk";
+
+    function predict() {
+      const input = document.getElementById("inputNumbers").value.trim();
+      if (!input) {
+        alert("ဂဏန်း ၃ လုံးကို ',' နဲ့ ခွဲရေးပြီး ထည့်ပါ။");
+        return;
+      }
+      const nums = input.split(',').map(n => parseInt(n));
+      if (nums.length !== 3 || nums.some(isNaN)) {
+        alert("ဂဏန်း ၃ လုံးမှန်ကန်စွာ ထည့်ပါ။ ဥပမာ: 7,8,5");
+        return;
+      }
+
+      const prediction = Math.pow(nums[0] + nums[1] + nums[2], 2) % 10;
+      document.getElementById("predictionResult").innerText =
+        "📍 ခန့်မှန်းဂဏန်း: " + prediction;
+    }
+
+    function checkAdmin() {
+      const entered = document.getElementById("adminPassword").value.trim();
+      if (entered === correctPassword) {
+        document.getElementById("saveSection").style.display = "block";
+        document.getElementById("adminPassword").style.display = "none";
+        event.target.style.display = "none";
+      } else {
+        tryCount++;
+        alert("Password မမှန်ပါ❌");
+        if (tryCount >= 3) {
+          document.getElementById("adminPassword").disabled = true;
+          document.getElementById("telegramContact").style.display = "block";
+        }
+      }
+    }
+
+    function saveResult() {
+      const input = document.getElementById("inputNumbers").value.trim();
+      const actual = document.getElementById("actualResult").value.trim();
+
+      if (!input || !actual) {
+        alert("Input နဲ့ Actual Result နှစ်ခုလုံး ထည့်ပါ။");
+        return;
+      }
+
+      savedResults.push({ pattern: input, result: actual });
+      updateTable();
+      document.getElementById("actualResult").value = "";
+    }
+
+    function updateTable() {
+      const tbody = document.getElementById("resultTableBody");
+      tbody.innerHTML = "";
+      savedResults.slice().reverse().forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${row.pattern}</td><td>${row.result}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+
+</body>
+</html>
