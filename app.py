@@ -1,28 +1,27 @@
 from flask import Flask, request, jsonify
-import math
-import os
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
-def calculate_next_number(a, b, c):
-    total = a + b + c
-    result = (total * total) % 10
-    return result
+@app.route("/", methods=["GET"])
+def home():
+    return "✅ CK AI BOT API is running! Use POST /predict with numbers."
 
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json()
-    numbers = data.get("numbers", [])
-    
-    if len(numbers) < 3:
-        return jsonify({"error": "At least 3 numbers are required"}), 400
+    numbers = data.get("numbers")
 
-    a, b, c = numbers[-3], numbers[-2], numbers[-1]
-    prediction = calculate_next_number(a, b, c)
+    if not numbers or len(numbers) != 3:
+        return jsonify({"error": "Please provide exactly 3 numbers"}), 400
 
-    return jsonify({"prediction": prediction})
+    try:
+        total = sum(numbers)
+        result = (total ** 2) % 10
+        return jsonify({"prediction": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-# ✅ Public Render deployment-compatible server runner
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Render will inject PORT
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)
